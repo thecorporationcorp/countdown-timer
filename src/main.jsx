@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import ThemeProvider from './ThemeProvider.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
@@ -17,10 +18,19 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Request notification permission on first interaction
+document.addEventListener('click', () => {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}, { once: true });
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

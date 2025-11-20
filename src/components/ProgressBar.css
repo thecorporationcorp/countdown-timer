@@ -1,0 +1,142 @@
+.progress-container {
+  margin: 2rem 0;
+}
+
+.progress-bar-linear {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent));
+  border-radius: 10px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px var(--accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progress-circle-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 0 auto;
+}
+
+.progress-circle {
+  transform: scaleX(-1);
+}
+
+.progress-circle-fill {
+  transition: stroke-dashoffset 0.5s ease;
+  filter: drop-shadow(0 0 8px var(--accent));
+}
+
+.progress-percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent);
+  letter-spacing: 0.1rem;
+}
+
+/* Animation when progress is low */
+.progress-fill[style*="width: 0"],
+.progress-fill[style*="width: 1"],
+.progress-fill[style*="width: 2"],
+.progress-fill[style*="width: 3"],
+.progress-fill[style*="width: 4"],
+.progress-fill[style*="width: 5"] {
+  animation: pulse-warning 1s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--danger);
+    background: var(--danger);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--danger);
+  }
+}
+
+/* Theme-specific adjustments */
+.theme-minimal .progress-bar-linear {
+  background: #e0e0e0;
+  box-shadow: none;
+}
+
+.theme-minimal .progress-fill {
+  box-shadow: none;
+}
+
+.theme-minimal .progress-fill::after {
+  display: none;
+}
+
+.theme-minimal .progress-circle-fill {
+  filter: none;
+}
+
+.theme-minimal .progress-percentage {
+  text-shadow: none;
+}
+
+.theme-calm .progress-bar-linear {
+  background: rgba(45, 139, 122, 0.2);
+}
+
+.theme-calm .progress-circle-fill {
+  filter: drop-shadow(0 0 4px var(--accent));
+}
+
+@media (max-width: 768px) {
+  .progress-circle-container {
+    width: 200px;
+    height: 200px;
+  }
+
+  .progress-circle {
+    width: 200px;
+    height: 200px;
+  }
+
+  .progress-circle svg {
+    transform: scale(0.714); /* 200/280 */
+  }
+
+  .progress-percentage {
+    font-size: 2rem;
+  }
+}

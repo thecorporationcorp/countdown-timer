@@ -1,0 +1,228 @@
+.datetime-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.datetime-picker {
+  background: rgba(20, 20, 30, 0.95);
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.picker-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--accent);
+  letter-spacing: 0.1rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-size: 2rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+.picker-body {
+  padding: 2rem;
+}
+
+.picker-body label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.1rem;
+  opacity: 0.8;
+  color: var(--text-main);
+}
+
+.picker-body input[type="datetime-local"] {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.picker-body input[type="datetime-local"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.quick-presets {
+  margin-top: 2rem;
+}
+
+.quick-presets p {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  letter-spacing: 0.1rem;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.preset-grid button {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.preset-grid button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.picker-footer {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cancel-btn,
+.confirm-btn {
+  flex: 1;
+  padding: 1rem;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  letter-spacing: 0.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid;
+}
+
+.cancel-btn {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-main);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.confirm-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+
+.confirm-btn:hover {
+  box-shadow: 0 0 30px var(--accent);
+  transform: translateY(-2px);
+}
+
+/* Theme-specific adjustments */
+.theme-minimal .datetime-picker {
+  background: #ffffff;
+  border-color: #333;
+}
+
+.theme-minimal .picker-body input[type="datetime-local"] {
+  background: #f5f5f5;
+  border-color: #ddd;
+  color: #1a1a1a;
+}
+
+.theme-minimal .preset-grid button {
+  background: #f5f5f5;
+  border-color: #ddd;
+  color: #1a1a1a;
+}
+
+.theme-calm .datetime-picker {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--accent);
+}
+
+.theme-calm .picker-header h3,
+.theme-calm .picker-body label,
+.theme-calm .close-btn {
+  color: var(--text-main);
+}
+
+.theme-calm .picker-body input[type="datetime-local"] {
+  background: rgba(163, 216, 201, 0.2);
+  color: var(--text-main);
+}
+
+@media (max-width: 768px) {
+  .datetime-picker {
+    width: 95%;
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

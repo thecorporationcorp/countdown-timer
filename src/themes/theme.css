@@ -1,0 +1,21 @@
+/* Shared theme variable structure */
+:root {
+  --bg-main: #000;
+  --text-main: #fff;
+  --accent: #00ffff;
+  --danger: #ff4d4d;
+  --font-family: 'Orbitron', sans-serif;
+}
+
+/* Base reset */
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}

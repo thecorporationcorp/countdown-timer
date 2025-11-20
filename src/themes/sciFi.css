@@ -1,0 +1,80 @@
+/* Theme A: Quantum / Sci-Fi */
+.theme-sci-fi {
+  --bg-main: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  --text-main: #ffffff;
+  --accent: #00ffff;
+  --danger: #ff4d4d;
+  --font-family: 'Orbitron', sans-serif;
+}
+
+.theme-sci-fi body {
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  position: relative;
+}
+
+/* Animated starfield background */
+.theme-sci-fi body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 60px 70px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 50px 50px, #ddd, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 90px 10px, #fff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: starfield 200s linear infinite;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+@keyframes starfield {
+  from { transform: translateY(0); }
+  to { transform: translateY(-200px); }
+}
+
+/* Cyber glow effects */
+.theme-sci-fi .time-unit {
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.3),
+    inset 0 0 20px rgba(0, 255, 255, 0.1);
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  animation: cyber-pulse 2s ease-in-out infinite;
+}
+
+@keyframes cyber-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(0, 255, 255, 0.3),
+      inset 0 0 20px rgba(0, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 40px rgba(0, 255, 255, 0.6),
+      inset 0 0 30px rgba(0, 255, 255, 0.2);
+  }
+}
+
+.theme-sci-fi .quantum-text {
+  animation: quantum-glitch 3s ease-in-out infinite;
+}
+
+@keyframes quantum-glitch {
+  0%, 90%, 100% {
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+  92% {
+    transform: translate(-2px, 2px);
+    filter: hue-rotate(90deg);
+  }
+  94% {
+    transform: translate(2px, -2px);
+    filter: hue-rotate(-90deg);
+  }
+}

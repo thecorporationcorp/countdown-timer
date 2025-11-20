@@ -1,0 +1,99 @@
+/* Theme C: Minimal / Clean */
+.theme-minimal {
+  --bg-main: #fafafa;
+  --text-main: #1a1a1a;
+  --accent: #333333;
+  --danger: #cc0000;
+  --font-family: 'Inter', sans-serif;
+}
+
+.theme-minimal body {
+  background: #fafafa;
+  position: relative;
+}
+
+/* Subtle grid pattern */
+.theme-minimal body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.theme-minimal .time-unit {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-minimal .time-unit:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.theme-minimal .time-value {
+  color: var(--accent);
+  text-shadow: none;
+  font-weight: 300;
+}
+
+.theme-minimal .time-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15rem;
+  text-transform: uppercase;
+}
+
+.theme-minimal .quantum-text {
+  color: var(--accent);
+  text-shadow: none;
+  animation: none;
+  font-weight: 700;
+  letter-spacing: 0.3rem;
+}
+
+.theme-minimal .subtitle {
+  font-weight: 300;
+  opacity: 0.5;
+}
+
+.theme-minimal .action-btn,
+.theme-minimal .reset-btn {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  color: var(--text-main);
+  font-weight: 500;
+  letter-spacing: 0.05rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-minimal .action-btn:hover,
+.theme-minimal .reset-btn:hover {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-minimal .expired-text {
+  color: var(--danger);
+  text-shadow: none;
+  font-weight: 700;
+}
+
+/* Clean animations */
+@keyframes minimal-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

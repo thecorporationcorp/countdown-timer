@@ -1,0 +1,46 @@
+{
+  "packageId": "com.quantum.countdown",
+  "host": "promptplaygroundz.com",
+  "name": "Quantum Countdown",
+  "launcherName": "Quantum",
+  "display": "standalone",
+  "themeColor": "#00ffff",
+  "navigationColor": "#000000",
+  "backgroundColor": "#000000",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://promptplaygroundz.com/icons/icon-512.png",
+  "maskableIconUrl": "https://promptplaygroundz.com/icons/icon-maskable.png",
+  "monochromeIconUrl": "https://promptplaygroundz.com/icons/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "quantum-countdown"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Quick Timer",
+      "short_name": "Quick",
+      "url": "/?quick=true",
+      "icon": "https://promptplaygroundz.com/icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://promptplaygroundz.com/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "minSdkVersion": 21,
+  "targetSdkVersion": 33
+}

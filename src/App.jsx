@@ -1,264 +1,352 @@
 import React, { useState, useCallback, memo } from 'react';
-import ThemeSwitcher from './components/ThemeSwitcher';
-import DateTimePicker from './components/DateTimePicker';
-import ProgressBar from './components/ProgressBar';
-import { useTimer } from './hooks/useTimer';
+import { useTimer, TIMER_STATE } from './hooks/useTimer';
 import { useWakeLock } from './hooks/useWakeLock';
+import { useTheme } from './hooks/useTheme';
 import './App.css';
 
-// Memoized time unit component for performance
-const TimeUnit = memo(function TimeUnit({ value, label, showMs = false }) {
+/**
+ * ELEGANT TIMER APP
+ *
+ * Design Principles:
+ * 1. One Way: Each action has exactly one way to perform it
+ * 2. Progressive Disclosure: Show only what's needed for current state
+ * 3. Zero Jargon: Labels a 5-year-old could understand
+ * 4. Minimal Chrome: Interface disappears, content shines
+ * 5. Instant Clarity: User knows what to do within 1 second
+ */
+
+// ============================================================================
+// PRESETS - Single Source of Truth
+// ============================================================================
+
+const PRESETS = [
+  { label: '5 min', minutes: 5 },
+  { label: '15 min', minutes: 15 },
+  { label: '30 min', minutes: 30 },
+  { label: '1 hour', minutes: 60 },
+];
+
+// ============================================================================
+// IDLE VIEW - "Set a Timer"
+// ============================================================================
+
+const IdleView = memo(function IdleView({ onStart, onCustom }) {
   return (
-    <div className="time-unit">
-      <div className="time-value" aria-live="polite">
-        {String(value).padStart(2, '0')}
-        {showMs && <span className="milliseconds">.{String(value).padStart(2, '0')}</span>}
+    <div className="idle-view">
+      <h2 className="view-title">Set a Timer</h2>
+      <div className="preset-buttons">
+        {PRESETS.map(({ label, minutes }) => (
+          <button
+            key={minutes}
+            className="preset-btn"
+            onClick={() => onStart(minutes / 60)}
+            aria-label={`Set timer for ${label}`}
+          >
+            {label}
+          </button>
+        ))}
+        <button
+          className="preset-btn custom"
+          onClick={onCustom}
+          aria-label="Set custom duration"
+        >
+          Custom
+        </button>
       </div>
-      <div className="time-label">{label}</div>
     </div>
   );
 });
 
+// ============================================================================
+// RUNNING VIEW - Timer counting down
+// ============================================================================
+
+const RunningView = memo(function RunningView({ timeLeft, progress, onPause, onCancel }) {
+  const timeString = formatTime(timeLeft);
+
+  return (
+    <div className="running-view">
+      <div className="progress-bar">
+        <div
+          className="progress-fill"
+          style={{ width: `${progress}%` }}
+          role="progressbar"
+          aria-valuenow={Math.round(progress)}
+          aria-valuemin="0"
+          aria-valuemax="100"
+        />
+      </div>
+
+      <div className="time-display" role="timer" aria-live="polite">
+        {timeString}
+      </div>
+
+      <div className="controls">
+        <button className="control-btn pause" onClick={onPause}>
+          Pause
+        </button>
+        <button className="control-btn cancel" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+});
+
+// ============================================================================
+// PAUSED VIEW - Timer frozen
+// ============================================================================
+
+const PausedView = memo(function PausedView({ timeLeft, progress, onResume, onCancel }) {
+  const timeString = formatTime(timeLeft);
+
+  return (
+    <div className="paused-view">
+      <div className="progress-bar paused">
+        <div
+          className="progress-fill"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="time-display paused">
+        {timeString}
+        <span className="paused-badge">PAUSED</span>
+      </div>
+
+      <div className="controls">
+        <button className="control-btn resume" onClick={onResume}>
+          Resume
+        </button>
+        <button className="control-btn cancel" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+});
+
+// ============================================================================
+// FINISHED VIEW - Timer complete
+// ============================================================================
+
+const FinishedView = memo(function FinishedView({ onRestart }) {
+  return (
+    <div className="finished-view">
+      <div className="celebration">🎉</div>
+      <h2 className="finished-title">Time's Up!</h2>
+      <button className="start-btn" onClick={onRestart}>
+        Start New Timer
+      </button>
+    </div>
+  );
+});
+
+// ============================================================================
+// CUSTOM TIME PICKER (Simplified)
+// ============================================================================
+
+function CustomPicker({ onSet, onClose }) {
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(30);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const totalHours = hours + minutes / 60;
+    if (totalHours > 0) {
+      onSet(totalHours);
+      onClose();
+    }
+  };
+
+  return (
+    <div className="picker-overlay" onClick={onClose}>
+      <div className="picker-modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Custom Duration</h3>
+
+        <form onSubmit={handleSubmit}>
+          <div className="picker-inputs">
+            <label>
+              <input
+                type="number"
+                min="0"
+                max="99"
+                value={hours}
+                onChange={(e) => setHours(parseInt(e.target.value) || 0)}
+              />
+              <span>hours</span>
+            </label>
+            <label>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={minutes}
+                onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
+              />
+              <span>minutes</span>
+            </label>
+          </div>
+
+          <div className="picker-actions">
+            <button type="button" className="picker-btn cancel" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="picker-btn start">
+              Start
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// SETTINGS MODAL
+// ============================================================================
+
+function SettingsModal({ onClose }) {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className="settings-overlay" onClick={onClose}>
+      <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="settings-header">
+          <h3>Settings</h3>
+          <button className="close-btn" onClick={onClose} aria-label="Close settings">×</button>
+        </div>
+
+        <div className="settings-body">
+          <div className="setting-row">
+            <span>Theme</span>
+            <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+              <option value="sci-fi">Sci-Fi</option>
+              <option value="calm">Calm</option>
+              <option value="minimal">Minimal</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function formatTime(timeLeft) {
+  const { days, hours, minutes, seconds } = timeLeft;
+  const totalHours = days * 24 + hours;
+
+  if (totalHours > 0) {
+    return `${String(totalHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+// ============================================================================
+// MAIN APP
+// ============================================================================
+
 function App() {
   const {
+    timerState,
     timeLeft,
-    isRunning,
-    isPaused,
-    isExpired,
     progress,
     setTimer,
-    setCustomTimer,
     pause,
     resume,
     reset,
   } = useTimer();
 
   const [showPicker, setShowPicker] = useState(false);
-  const [keepScreenOn, setKeepScreenOn] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  // Wake Lock when timer is running and user wants screen on
-  const wakeLockActive = useWakeLock(isRunning && keepScreenOn);
+  // Auto-enable wake lock when running
+  useWakeLock(timerState === TIMER_STATE.RUNNING);
 
-  // Share timer functionality
-  const handleShare = useCallback(async () => {
-    if (!navigator.share) {
-      // Fallback: copy to clipboard
-      try {
-        const url = window.location.href;
-        await navigator.clipboard.writeText(url);
-        alert('Link copied to clipboard!');
-      } catch (err) {
-        console.error('Share failed:', err);
-      }
-      return;
-    }
-
-    try {
-      await navigator.share({
-        title: 'Quantum Countdown Timer',
-        text: `Check out my countdown timer! ${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s remaining`,
-        url: window.location.href,
-      });
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error('Share failed:', err);
-      }
-    }
-  }, [timeLeft]);
-
-  // Handle quick timer set
-  const handleQuickSet = useCallback((hours) => {
+  // Handlers
+  const handleStart = useCallback((hours) => {
     setTimer(hours);
   }, [setTimer]);
 
-  // Handle custom timer set
-  const handleCustomSet = useCallback((targetDate) => {
-    setCustomTimer(targetDate);
-  }, [setCustomTimer]);
+  const handleCancel = useCallback(() => {
+    reset();
+  }, [reset]);
 
-  // Toggle pause/resume
-  const handleTogglePause = useCallback(() => {
-    if (isPaused) {
-      resume();
-    } else {
-      pause();
+  // Determine which view to show
+  const renderView = () => {
+    switch (timerState) {
+      case TIMER_STATE.IDLE:
+        return (
+          <IdleView
+            onStart={handleStart}
+            onCustom={() => setShowPicker(true)}
+          />
+        );
+
+      case TIMER_STATE.RUNNING:
+        return (
+          <RunningView
+            timeLeft={timeLeft}
+            progress={progress}
+            onPause={pause}
+            onCancel={handleCancel}
+          />
+        );
+
+      case TIMER_STATE.PAUSED:
+        return (
+          <PausedView
+            timeLeft={timeLeft}
+            progress={progress}
+            onResume={resume}
+            onCancel={handleCancel}
+          />
+        );
+
+      case TIMER_STATE.EXPIRED:
+        return <FinishedView onRestart={reset} />;
+
+      default:
+        return <IdleView onStart={handleStart} onCustom={() => setShowPicker(true)} />;
     }
-  }, [isPaused, pause, resume]);
+  };
 
   return (
     <div className="app">
-      <ThemeSwitcher />
+      {/* Settings Button */}
+      <button
+        className="settings-btn"
+        onClick={() => setShowSettings(true)}
+        aria-label="Settings"
+      >
+        ⚙
+      </button>
 
+      {/* Main Content */}
       <div className="container">
         <header>
-          <h1 className="title">
-            <span className="quantum-text">QUANTUM</span>
-            <span className="subtitle">COUNTDOWN</span>
-          </h1>
+          <h1 className="app-title">Timer</h1>
         </header>
 
         <main>
-          {isExpired ? (
-            <div className="expired-message" role="alert">
-              <div className="expired-icon">🎉</div>
-              <div className="expired-text">TIME'S UP!</div>
-              <p className="expired-subtext">Your countdown has finished</p>
-              <div className="expired-actions">
-                <button
-                  className="reset-btn primary"
-                  onClick={reset}
-                  aria-label="Start new timer"
-                >
-                  NEW TIMER
-                </button>
-                <button
-                  className="reset-btn secondary"
-                  onClick={() => handleQuickSet(1)}
-                  aria-label="Quick restart: 1 hour"
-                >
-                  RESTART (1H)
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Progress Visualization */}
-              {isRunning && <ProgressBar progress={progress} />}
-
-              {/* Timer Display */}
-              <div
-                className={`timer-grid ${isPaused ? 'paused' : ''}`}
-                role="timer"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                <TimeUnit value={timeLeft.days} label="DAYS" />
-                <TimeUnit value={timeLeft.hours} label="HOURS" />
-                <TimeUnit value={timeLeft.minutes} label="MINUTES" />
-                <TimeUnit value={timeLeft.seconds} label="SECONDS" />
-              </div>
-
-              {/* Milliseconds Display (when timer is active) */}
-              {isRunning && !isPaused && (
-                <div className="milliseconds-display" aria-live="off">
-                  <span className="ms-value">{String(timeLeft.milliseconds).padStart(2, '0')}</span>
-                  <span className="ms-label">CENTISECONDS</span>
-                </div>
-              )}
-
-              {/* Timer Controls */}
-              {isRunning && (
-                <div className="timer-controls">
-                  <button
-                    className={`control-btn ${isPaused ? 'resume' : 'pause'}`}
-                    onClick={handleTogglePause}
-                    aria-label={isPaused ? 'Resume timer' : 'Pause timer'}
-                  >
-                    {isPaused ? '▶ RESUME' : '⏸ PAUSE'}
-                  </button>
-                  <button
-                    className="control-btn reset"
-                    onClick={reset}
-                    aria-label="Reset timer"
-                  >
-                    ⟲ RESET
-                  </button>
-                  <button
-                    className="control-btn share"
-                    onClick={handleShare}
-                    aria-label="Share timer"
-                  >
-                    ⤴ SHARE
-                  </button>
-                </div>
-              )}
-
-              {/* Screen Wake Lock Toggle */}
-              {isRunning && 'wakeLock' in navigator && (
-                <div className="wake-lock-toggle">
-                  <label className="toggle-label">
-                    <input
-                      type="checkbox"
-                      checked={keepScreenOn}
-                      onChange={(e) => setKeepScreenOn(e.target.checked)}
-                      aria-label="Keep screen on"
-                    />
-                    <span className="toggle-slider"></span>
-                    <span className="toggle-text">
-                      Keep Screen On {wakeLockActive && '🔒'}
-                    </span>
-                  </label>
-                </div>
-              )}
-
-              {/* Quick Actions */}
-              <div className="quick-actions">
-                <h3 className="actions-title">Quick Start</h3>
-                <div className="action-buttons">
-                  <button
-                    className="action-btn"
-                    onClick={() => handleQuickSet(1)}
-                    aria-label="Set timer for 1 hour"
-                  >
-                    1 Hour
-                  </button>
-                  <button
-                    className="action-btn"
-                    onClick={() => handleQuickSet(6)}
-                    aria-label="Set timer for 6 hours"
-                  >
-                    6 Hours
-                  </button>
-                  <button
-                    className="action-btn"
-                    onClick={() => handleQuickSet(24)}
-                    aria-label="Set timer for 1 day"
-                  >
-                    1 Day
-                  </button>
-                  <button
-                    className="action-btn"
-                    onClick={() => handleQuickSet(168)}
-                    aria-label="Set timer for 1 week"
-                  >
-                    1 Week
-                  </button>
-                </div>
-                <button
-                  className="action-btn custom"
-                  onClick={() => setShowPicker(true)}
-                  aria-label="Set custom time"
-                >
-                  ⏱ CUSTOM TIME
-                </button>
-              </div>
-            </>
-          )}
+          {renderView()}
         </main>
-
-        {/* Status Information */}
-        {isPaused && (
-          <div className="status-banner paused" role="status" aria-live="polite">
-            ⏸ Timer Paused
-          </div>
-        )}
-
-        {/* Footer Info */}
-        <footer className="app-footer">
-          <p>
-            {isRunning && !isExpired
-              ? `${progress.toFixed(1)}% Complete`
-              : 'Set a timer to get started'}
-          </p>
-        </footer>
       </div>
 
-      {/* Date/Time Picker Modal */}
+      {/* Modals */}
       {showPicker && (
-        <DateTimePicker
-          onSetTime={handleCustomSet}
+        <CustomPicker
+          onSet={handleStart}
           onClose={() => setShowPicker(false)}
         />
+      )}
+
+      {showSettings && (
+        <SettingsModal onClose={() => setShowSettings(false)} />
       )}
     </div>
   );

@@ -1,7 +1,11 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, useEffect, useRef, memo } from 'react';
 import { useTimer, TIMER_STATE } from './hooks/useTimer';
 import { useWakeLock } from './hooks/useWakeLock';
 import { useTheme } from './hooks/useTheme';
+import { useFeatures } from './FeaturesProvider';
+import TVISettings from './components/TVISettings';
+import AlarmSettings from './components/AlarmSettings';
+import PhoneAFriendUI from './components/PhoneAFriendUI';
 import './App.css';
 
 /**
@@ -130,13 +134,13 @@ const PausedView = memo(function PausedView({ timeLeft, progress, onResume, onCa
 // FINISHED VIEW - Timer complete
 // ============================================================================
 
-const FinishedView = memo(function FinishedView({ onRestart }) {
+const FinishedView = memo(function FinishedView({ onRestart, isAlarming }) {
   return (
-    <div className="finished-view">
-      <div className="celebration">🎉</div>
+    <div className={`finished-view ${isAlarming ? 'alarming' : ''}`}>
+      <div className="celebration">{isAlarming ? '🔔' : '🎉'}</div>
       <h2 className="finished-title">Time's Up!</h2>
-      <button className="start-btn" onClick={onRestart}>
-        Start New Timer
+      <button className="start-btn dismiss-btn" onClick={onRestart}>
+        {isAlarming ? 'Dismiss Alarm' : 'Start New Timer'}
       </button>
     </div>
   );
@@ -203,29 +207,105 @@ function CustomPicker({ onSet, onClose }) {
 }
 
 // ============================================================================
-// SETTINGS MODAL
+// SETTINGS MODAL - Tabbed Interface
 // ============================================================================
+
+const SETTINGS_TABS = [
+  { id: 'general', label: 'Theme', icon: '🎨' },
+  { id: 'voice', label: 'Voice', icon: '🔊' },
+  { id: 'alarm', label: 'Alarm', icon: '⏰' },
+  { id: 'friends', label: 'Friends', icon: '👥' },
+];
 
 function SettingsModal({ onClose }) {
   const { theme, setTheme } = useTheme();
+  const { tvi, alarm, accountability, testAudio } = useFeatures();
+  const [activeTab, setActiveTab] = useState('general');
 
   return (
     <div className="settings-overlay" onClick={onClose}>
-      <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="settings-modal expanded" onClick={(e) => e.stopPropagation()}>
         <div className="settings-header">
           <h3>Settings</h3>
           <button className="close-btn" onClick={onClose} aria-label="Close settings">×</button>
         </div>
 
+        {/* Tab Navigation */}
+        <div className="settings-tabs">
+          {SETTINGS_TABS.map(({ id, label, icon }) => (
+            <button
+              key={id}
+              className={`settings-tab ${activeTab === id ? 'active' : ''}`}
+              onClick={() => setActiveTab(id)}
+            >
+              <span className="tab-icon">{icon}</span>
+              <span className="tab-label">{label}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="settings-body">
-          <div className="setting-row">
-            <span>Theme</span>
-            <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-              <option value="sci-fi">Sci-Fi</option>
-              <option value="calm">Calm</option>
-              <option value="minimal">Minimal</option>
-            </select>
-          </div>
+          {/* General / Theme Tab */}
+          {activeTab === 'general' && (
+            <div className="settings-panel">
+              <div className="setting-row">
+                <span>Theme</span>
+                <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+                  <option value="sci-fi">Sci-Fi</option>
+                  <option value="calm">Calm</option>
+                  <option value="minimal">Minimal</option>
+                </select>
+              </div>
+              <p className="setting-hint">
+                {theme === 'sci-fi' && '80s arcade mothership vibes'}
+                {theme === 'calm' && 'Japanese tea garden tranquility'}
+                {theme === 'minimal' && 'Clean and focused'}
+              </p>
+            </div>
+          )}
+
+          {/* Voice Tab */}
+          {activeTab === 'voice' && (
+            <div className="settings-panel">
+              <TVISettings
+                settings={tvi.settings}
+                onSettingsChange={tvi.updateSettings}
+                onTest={testAudio}
+                isAvailable={tvi.isAvailable}
+              />
+            </div>
+          )}
+
+          {/* Alarm Tab */}
+          {activeTab === 'alarm' && (
+            <div className="settings-panel">
+              <AlarmSettings
+                settings={alarm.settings}
+                onSettingsChange={alarm.updateSettings}
+                onTest={alarm.testAlarm}
+                onRequestPermission={alarm.requestNotificationPermission}
+                notificationPermission={alarm.notificationPermission}
+                hasNotificationSupport={alarm.hasNotificationSupport}
+                hasVibrationSupport={alarm.hasVibrationSupport}
+              />
+            </div>
+          )}
+
+          {/* Friends Tab */}
+          {activeTab === 'friends' && (
+            <div className="settings-panel">
+              <PhoneAFriendUI
+                contacts={accountability.contacts}
+                settings={accountability.settings}
+                onAddContact={accountability.addContact}
+                onRemoveContact={accountability.removeContact}
+                onUpdateContact={accountability.updateContact}
+                onSettingsChange={accountability.updateSettings}
+                maxContacts={accountability.maxContacts}
+                toneOptions={accountability.toneOptions}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -261,20 +341,75 @@ function App() {
     reset,
   } = useTimer();
 
+  const {
+    onTimerStart,
+    onTimerTick,
+    onTimerPause,
+    onTimerResume,
+    onTimerReset,
+    onTimerExpire,
+    alarm,
+  } = useFeatures();
+
   const [showPicker, setShowPicker] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Track previous state for detecting transitions
+  const prevStateRef = useRef(timerState);
+  const totalDurationRef = useRef(0);
 
   // Auto-enable wake lock when running
   useWakeLock(timerState === TIMER_STATE.RUNNING);
 
+  // Wire up timer state changes to features
+  useEffect(() => {
+    const prevState = prevStateRef.current;
+    prevStateRef.current = timerState;
+
+    // Detect state transitions
+    if (prevState !== timerState) {
+      if (timerState === TIMER_STATE.PAUSED && prevState === TIMER_STATE.RUNNING) {
+        onTimerPause();
+      } else if (timerState === TIMER_STATE.RUNNING && prevState === TIMER_STATE.PAUSED) {
+        onTimerResume();
+      } else if (timerState === TIMER_STATE.EXPIRED && prevState === TIMER_STATE.RUNNING) {
+        onTimerExpire();
+      } else if (timerState === TIMER_STATE.IDLE && prevState !== TIMER_STATE.IDLE) {
+        onTimerReset();
+      }
+    }
+  }, [timerState, onTimerPause, onTimerResume, onTimerExpire, onTimerReset]);
+
+  // Send tick updates to TVI when running
+  useEffect(() => {
+    if (timerState === TIMER_STATE.RUNNING && totalDurationRef.current > 0) {
+      const remainingMs =
+        timeLeft.days * 86400000 +
+        timeLeft.hours * 3600000 +
+        timeLeft.minutes * 60000 +
+        timeLeft.seconds * 1000;
+      onTimerTick(remainingMs, totalDurationRef.current);
+    }
+  }, [timerState, timeLeft, onTimerTick]);
+
   // Handlers
   const handleStart = useCallback((hours) => {
+    const durationMs = hours * 3600000;
+    totalDurationRef.current = durationMs;
     setTimer(hours);
-  }, [setTimer]);
+    onTimerStart(durationMs);
+  }, [setTimer, onTimerStart]);
 
   const handleCancel = useCallback(() => {
     reset();
-  }, [reset]);
+    onTimerReset();
+  }, [reset, onTimerReset]);
+
+  // Handle alarm confirmation from Finished view
+  const handleRestart = useCallback(() => {
+    alarm.confirmAlarm();
+    reset();
+  }, [reset, alarm]);
 
   // Determine which view to show
   const renderView = () => {
@@ -308,7 +443,7 @@ function App() {
         );
 
       case TIMER_STATE.EXPIRED:
-        return <FinishedView onRestart={reset} />;
+        return <FinishedView onRestart={handleRestart} isAlarming={alarm.isAlarming} />;
 
       default:
         return <IdleView onStart={handleStart} onCustom={() => setShowPicker(true)} />;

@@ -55,74 +55,88 @@
   --radius-small: 12px;
   --radius-tiny: 8px;
 
-  /* === DEFAULT THEME (Quantum) === */
-  --bg-primary: radial-gradient(ellipse at 30% 100%, #1a1f35 0%, #0a0e1a 100%);
-  --bg-secondary: rgba(255, 255, 255, 0.03);
-  --bg-surface: rgba(255, 255, 255, 0.05);
-  --bg-elevated: rgba(255, 255, 255, 0.08);
+  /* === DEFAULT THEME (Sci-Fi: 80s Arcade Mothership) === */
+  /* Deep space with neon grid vibes */
+  --bg-primary: linear-gradient(180deg, #0a0015 0%, #1a0030 40%, #0d0020 100%);
+  --bg-secondary: rgba(255, 0, 255, 0.03);
+  --bg-surface: rgba(0, 255, 255, 0.05);
+  --bg-elevated: rgba(255, 0, 255, 0.08);
 
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.6);
-  --text-muted: rgba(255, 255, 255, 0.4);
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.45);
 
-  --accent: #00ffff;
-  --accent-light: #66ffff;
-  --accent-glow: rgba(0, 255, 255, 0.4);
-  --accent-subtle: rgba(0, 255, 255, 0.1);
+  /* Hot magenta/cyan neon palette */
+  --accent: #ff00ff;
+  --accent-light: #ff66ff;
+  --accent-glow: rgba(255, 0, 255, 0.5);
+  --accent-subtle: rgba(255, 0, 255, 0.12);
 
-  --success: #00ff88;
-  --success-glow: rgba(0, 255, 136, 0.4);
+  /* Electric green for success */
+  --success: #00ff66;
+  --success-glow: rgba(0, 255, 102, 0.5);
 
-  --warning: #ffa500;
-  --warning-glow: rgba(255, 165, 0, 0.4);
+  /* Amber warning */
+  --warning: #ffaa00;
+  --warning-glow: rgba(255, 170, 0, 0.5);
 
-  --danger: #ff4d6d;
-  --danger-glow: rgba(255, 77, 109, 0.4);
+  /* Hot pink danger */
+  --danger: #ff0066;
+  --danger-glow: rgba(255, 0, 102, 0.5);
 
-  --gold: #ffd700;
-  --gold-glow: rgba(255, 215, 0, 0.5);
+  /* Cyan accent */
+  --gold: #00ffff;
+  --gold-glow: rgba(0, 255, 255, 0.6);
 
-  /* === SHADOWS & DEPTH === */
-  --shadow-glow: 0 0 40px var(--accent-glow);
-  --shadow-lifted: 0 10px 40px rgba(0, 0, 0, 0.3);
-  --shadow-pressed: 0 2px 10px rgba(0, 0, 0, 0.2);
-  --shadow-ambient: 0 0 100px rgba(0, 255, 255, 0.15);
+  /* === SHADOWS & DEPTH - Neon glow === */
+  --shadow-glow: 0 0 50px var(--accent-glow), 0 0 100px rgba(0, 255, 255, 0.2);
+  --shadow-lifted: 0 10px 50px rgba(255, 0, 255, 0.3);
+  --shadow-pressed: 0 2px 15px rgba(255, 0, 255, 0.3);
+  --shadow-ambient: 0 0 150px rgba(255, 0, 255, 0.2), 0 0 200px rgba(0, 255, 255, 0.1);
 }
 
 /* ============================================================================
-   THEME: CALM (Nature-Inspired Serenity)
+   THEME: CALM (Japanese Tea Garden - Earth Tones)
    ============================================================================ */
 
 .theme-calm {
-  --bg-primary: linear-gradient(160deg, #e8f4f0 0%, #d0e8df 100%);
-  --bg-secondary: rgba(74, 144, 121, 0.05);
-  --bg-surface: rgba(255, 255, 255, 0.7);
-  --bg-elevated: rgba(255, 255, 255, 0.9);
+  /* Washi paper with subtle bamboo texture feel */
+  --bg-primary: linear-gradient(175deg, #f5f0e8 0%, #e8dfd0 50%, #ddd5c5 100%);
+  --bg-secondary: rgba(107, 84, 60, 0.04);
+  --bg-surface: rgba(255, 252, 245, 0.85);
+  --bg-elevated: rgba(255, 253, 248, 0.95);
 
-  --text-primary: #1a3d35;
-  --text-secondary: rgba(26, 61, 53, 0.65);
-  --text-muted: rgba(26, 61, 53, 0.4);
+  /* Deep matcha and ink tones */
+  --text-primary: #2d3a2d;
+  --text-secondary: rgba(45, 58, 45, 0.7);
+  --text-muted: rgba(45, 58, 45, 0.45);
 
-  --accent: #3d9b8f;
-  --accent-light: #5fbfb0;
-  --accent-glow: rgba(61, 155, 143, 0.35);
-  --accent-subtle: rgba(61, 155, 143, 0.1);
+  /* Moss green accent - zen garden stones */
+  --accent: #5a7a5a;
+  --accent-light: #7a9a7a;
+  --accent-glow: rgba(90, 122, 90, 0.3);
+  --accent-subtle: rgba(90, 122, 90, 0.08);
 
-  --success: #2d8b5a;
-  --success-glow: rgba(45, 139, 90, 0.3);
+  /* Natural earth palette */
+  --success: #5a7a5a;
+  --success-glow: rgba(90, 122, 90, 0.25);
 
-  --warning: #c47f17;
-  --warning-glow: rgba(196, 127, 23, 0.3);
+  --warning: #a67c4a;
+  --warning-glow: rgba(166, 124, 74, 0.25);
 
-  --danger: #c74b4b;
-  --danger-glow: rgba(199, 75, 75, 0.3);
+  --danger: #8b5a5a;
+  --danger-glow: rgba(139, 90, 90, 0.25);
 
-  --gold: #d4a500;
-  --gold-glow: rgba(212, 165, 0, 0.4);
+  --gold: #9a8a5a;
+  --gold-glow: rgba(154, 138, 90, 0.35);
 
-  --shadow-glow: 0 0 40px var(--accent-glow);
-  --shadow-lifted: 0 10px 40px rgba(61, 155, 143, 0.2);
-  --shadow-ambient: 0 0 100px rgba(61, 155, 143, 0.1);
+  /* Soft, diffused shadows like paper lantern light */
+  --shadow-glow: 0 0 60px rgba(90, 122, 90, 0.15);
+  --shadow-lifted: 0 8px 32px rgba(45, 58, 45, 0.1);
+  --shadow-ambient: 0 0 120px rgba(166, 124, 74, 0.08);
+
+  /* Japanese typography feel */
+  --font-display: 'Noto Sans JP', 'Inter', sans-serif;
 }
 
 /* ============================================================================
@@ -1059,6 +1073,195 @@ select:focus-visible {
   .preset-btn.custom {
     grid-column: span 2;
   }
+}
+
+/* ============================================================================
+   EXPANDED SETTINGS MODAL - Tabbed Interface
+   ============================================================================ */
+
+.settings-modal.expanded {
+  max-width: 440px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--bg-surface);
+  background: var(--bg-secondary);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.settings-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color var(--duration-quick) ease,
+    border-color var(--duration-quick) ease;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.settings-tab .tab-icon {
+  font-size: 1.25rem;
+}
+
+.settings-tab:hover {
+  color: var(--text-secondary);
+}
+
+.settings-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.settings-modal.expanded .settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+}
+
+.settings-panel {
+  animation: fadeSlideIn var(--duration-quick) ease;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.setting-hint {
+  margin-top: var(--space-2);
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ============================================================================
+   ALARMING STATE - Pulsing Alert Animation
+   ============================================================================ */
+
+.finished-view.alarming {
+  animation: alarmPulse 1s ease-in-out infinite;
+}
+
+.finished-view.alarming .celebration {
+  animation: alarmBell 0.5s ease-in-out infinite;
+}
+
+.finished-view.alarming .dismiss-btn {
+  background: var(--danger);
+  animation: urgentPulse 1s ease-in-out infinite;
+}
+
+.finished-view.alarming .dismiss-btn:hover {
+  background: var(--danger);
+  filter: brightness(1.2);
+}
+
+@keyframes alarmPulse {
+  0%, 100% {
+    background: transparent;
+  }
+  50% {
+    background: var(--danger-glow);
+  }
+}
+
+@keyframes alarmBell {
+  0%, 100% {
+    transform: rotate(-15deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+}
+
+@keyframes urgentPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--danger-glow);
+  }
+  50% {
+    box-shadow: 0 0 30px 10px var(--danger-glow);
+  }
+}
+
+/* ============================================================================
+   80s ARCADE GRID OVERLAY (Sci-Fi Theme Enhancement)
+   ============================================================================ */
+
+.theme-sci-fi .app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(transparent 98%, rgba(255, 0, 255, 0.1) 100%),
+    linear-gradient(90deg, transparent 98%, rgba(0, 255, 255, 0.1) 100%);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: -1;
+  animation: gridScroll 20s linear infinite;
+}
+
+@keyframes gridScroll {
+  0% {
+    transform: perspective(500px) rotateX(60deg) translateY(0);
+  }
+  100% {
+    transform: perspective(500px) rotateX(60deg) translateY(50px);
+  }
+}
+
+/* ============================================================================
+   JAPANESE TEA GARDEN ENHANCEMENTS (Calm Theme)
+   ============================================================================ */
+
+.theme-calm .app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(90, 122, 90, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(166, 124, 74, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.theme-calm .progress-fill {
+  background: linear-gradient(90deg, #5a7a5a, #7a9a7a);
+}
+
+.theme-calm .time-display {
+  font-weight: 300;
+  letter-spacing: 0.15em;
+}
+
+.theme-calm .preset-btn,
+.theme-calm .control-btn,
+.theme-calm .start-btn {
+  border-radius: var(--radius-tiny);
+  font-weight: 400;
 }
 
 /* ============================================================================

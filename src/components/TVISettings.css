@@ -1,0 +1,184 @@
+/**
+ * TVI SETTINGS STYLES
+ *
+ * Inherits from Grand Aesthetic Spec design tokens.
+ */
+
+.tvi-settings {
+  padding: var(--space-4);
+  border-top: 1px solid var(--bg-surface);
+}
+
+.tvi-settings h4 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  color: var(--text-primary);
+}
+
+.tvi-unavailable {
+  opacity: 0.6;
+}
+
+.tvi-notice {
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+}
+
+.tvi-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+}
+
+.tvi-setting-row + .tvi-setting-row {
+  border-top: 1px solid var(--bg-secondary);
+}
+
+/* Toggle Switch */
+.tvi-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tvi-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.tvi-toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-quick) ease;
+}
+
+.tvi-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  top: 3px;
+  left: 3px;
+  transition: transform var(--duration-quick) var(--ease-out-back),
+              background var(--duration-quick) ease;
+}
+
+.tvi-toggle input:checked + .tvi-toggle-slider {
+  background: var(--accent-subtle);
+}
+
+.tvi-toggle input:checked + .tvi-toggle-slider::before {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+
+.tvi-toggle-label {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Select Dropdown */
+.tvi-setting-select {
+  flex-wrap: wrap;
+}
+
+.tvi-setting-select span {
+  font-size: var(--text-small);
+  color: var(--text-primary);
+}
+
+.tvi-setting-select select {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-elevated);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: border-color var(--duration-quick) ease;
+}
+
+.tvi-setting-select select:hover {
+  border-color: var(--accent);
+}
+
+.tvi-setting-select select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+/* Range Slider */
+.tvi-setting-range {
+  gap: var(--space-2);
+}
+
+.tvi-setting-range span {
+  font-size: var(--text-small);
+  color: var(--text-primary);
+}
+
+.tvi-setting-range input[type="range"] {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-pill);
+  appearance: none;
+  cursor: pointer;
+}
+
+.tvi-setting-range input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--duration-quick) var(--ease-out-back);
+}
+
+.tvi-setting-range input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.tvi-volume-value {
+  min-width: 40px;
+  text-align: right;
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+}
+
+/* Test Button */
+.tvi-test-btn {
+  width: 100%;
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: background var(--duration-quick) ease,
+              color var(--duration-quick) ease;
+}
+
+.tvi-test-btn:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+}

@@ -1,0 +1,380 @@
+/**
+ * PHONE A FRIEND UI STYLES
+ *
+ * Inherits from Grand Aesthetic Spec design tokens.
+ */
+
+.paf-settings {
+  padding: var(--space-4);
+  border-top: 1px solid var(--bg-surface);
+}
+
+.paf-settings h4 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  color: var(--text-primary);
+}
+
+.paf-description {
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+  line-height: 1.5;
+}
+
+/* Toggle */
+.paf-setting-row {
+  margin-bottom: var(--space-3);
+}
+
+.paf-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  user-select: none;
+}
+
+.paf-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.paf-toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-quick) ease;
+}
+
+.paf-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  top: 3px;
+  left: 3px;
+  transition: transform var(--duration-quick) var(--ease-out-back),
+              background var(--duration-quick) ease;
+}
+
+.paf-toggle input:checked + .paf-toggle-slider {
+  background: var(--accent-subtle);
+}
+
+.paf-toggle input:checked + .paf-toggle-slider::before {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+
+.paf-toggle-label {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Contact List */
+.paf-contacts {
+  margin-bottom: var(--space-3);
+}
+
+.paf-no-contacts {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-small);
+}
+
+.paf-contact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background: var(--bg-surface);
+  border-radius: var(--radius-small);
+  margin-bottom: var(--space-2);
+}
+
+.paf-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.paf-contact-name {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.paf-contact-method {
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+}
+
+.paf-contact-tone {
+  font-size: var(--text-micro);
+  color: var(--accent);
+}
+
+.paf-remove-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--duration-quick) ease,
+              color var(--duration-quick) ease;
+}
+
+.paf-remove-btn:hover {
+  background: var(--danger-glow);
+  color: var(--danger);
+}
+
+/* Add Button */
+.paf-add-btn {
+  width: 100%;
+  padding: var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--accent);
+  background: transparent;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: background var(--duration-quick) ease;
+}
+
+.paf-add-btn:hover {
+  background: var(--accent-subtle);
+}
+
+/* Add Form */
+.paf-add-form {
+  background: var(--bg-surface);
+  border-radius: var(--radius-medium);
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.paf-add-form h5 {
+  font-size: var(--text-small);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  color: var(--text-primary);
+}
+
+.paf-error {
+  font-size: var(--text-small);
+  color: var(--danger);
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
+  background: var(--danger-glow);
+  border-radius: var(--radius-tiny);
+}
+
+.paf-form-field {
+  margin-bottom: var(--space-3);
+}
+
+.paf-form-field label {
+  display: block;
+  font-size: var(--text-micro);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.paf-form-field input,
+.paf-form-field select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--bg-elevated);
+  border-radius: var(--radius-small);
+  transition: border-color var(--duration-quick) ease;
+}
+
+.paf-form-field input:focus,
+.paf-form-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.paf-form-field select {
+  cursor: pointer;
+}
+
+.paf-preview-btn {
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--bg-elevated);
+  border-radius: var(--radius-tiny);
+  cursor: pointer;
+}
+
+.paf-preview-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Consent Checkbox */
+.paf-consent {
+  margin-top: var(--space-4);
+}
+
+.paf-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.paf-checkbox input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.paf-checkbox span {
+  font-size: var(--text-small);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Form Actions */
+.paf-form-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.paf-cancel-btn,
+.paf-submit-btn {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: 500;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: background var(--duration-quick) ease,
+              color var(--duration-quick) ease;
+}
+
+.paf-cancel-btn {
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--bg-elevated);
+}
+
+.paf-cancel-btn:hover {
+  background: var(--bg-secondary);
+}
+
+.paf-submit-btn {
+  color: #000;
+  background: var(--accent);
+  border: none;
+}
+
+.paf-submit-btn:hover {
+  background: var(--accent-light);
+}
+
+.paf-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Preview Modal */
+.paf-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.paf-preview-modal {
+  background: var(--bg-primary);
+  border: 1px solid var(--bg-surface);
+  border-radius: var(--radius-medium);
+  padding: var(--space-4);
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.paf-preview-modal h5 {
+  font-size: var(--text-base);
+  margin-bottom: var(--space-3);
+  color: var(--text-primary);
+}
+
+.paf-preview-subject {
+  font-size: var(--text-small);
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
+  background: var(--bg-surface);
+  border-radius: var(--radius-tiny);
+}
+
+.paf-preview-body {
+  margin-bottom: var(--space-4);
+}
+
+.paf-preview-body pre {
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  white-space: pre-wrap;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.paf-preview-close {
+  width: 100%;
+  padding: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: none;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+}
+
+.paf-preview-close:hover {
+  background: var(--bg-elevated);
+}

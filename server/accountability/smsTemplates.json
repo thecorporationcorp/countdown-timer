@@ -1,0 +1,34 @@
+{
+  "templates": {
+    "professional": {
+      "initial": "ALERT: {name} set a timer that expired at {expireTime} and hasn't confirmed. Please check on them.",
+      "followUp": "REMINDER: {name} still hasn't responded. Time since timer: {timeSince}.",
+      "escalation": "URGENT: {name} unresponsive for {timeSince}. Immediate contact recommended."
+    },
+    "friendly": {
+      "initial": "Hey! {name} might need a nudge - their timer ended at {expireTime} and they haven't responded 😊",
+      "followUp": "Quick reminder about {name} - still no response. Maybe give them a call?",
+      "escalation": "Getting concerned about {name} - it's been {timeSince}. Please try reaching out!"
+    },
+    "urgency": {
+      "initial": "URGENT: {name} - Timer Alert. Expired: {expireTime}. No response received.",
+      "followUp": "ALERT: {name} - {timeSince} since timer. No confirmation. Please contact.",
+      "escalation": "CRITICAL: {name} unresponsive {timeSince}. Immediate action required."
+    },
+    "comedic": {
+      "initial": "🚀 Agent {name} has gone dark! Their quantum countdown ended at {expireTime}. Mission: locate and verify!",
+      "followUp": "🌌 Still no signal from Agent {name}. The temporal rift grows ({timeSince}). Deploy rescue protocol!",
+      "escalation": "⚠️ RED ALERT: Agent {name} MIA for {timeSince}. Activate emergency extraction team!"
+    }
+  },
+  "variables": {
+    "name": "Contact's display name",
+    "expireTime": "Timer expiration time (formatted)",
+    "timeSince": "Time elapsed since expiration",
+    "timerName": "Optional timer label"
+  },
+  "maxLength": {
+    "sms": 160,
+    "mms": 1600
+  }
+}

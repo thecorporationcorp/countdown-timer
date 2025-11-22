@@ -1,0 +1,181 @@
+/**
+ * ALARM SETTINGS STYLES
+ *
+ * Inherits from Grand Aesthetic Spec design tokens.
+ */
+
+.alarm-settings {
+  padding: var(--space-4);
+  border-top: 1px solid var(--bg-surface);
+}
+
+.alarm-settings h4 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  color: var(--text-primary);
+}
+
+.alarm-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.alarm-setting-row + .alarm-setting-row {
+  border-top: 1px solid var(--bg-secondary);
+}
+
+/* Toggle Switch */
+.alarm-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  user-select: none;
+}
+
+.alarm-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.alarm-toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-quick) ease;
+}
+
+.alarm-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  top: 3px;
+  left: 3px;
+  transition: transform var(--duration-quick) var(--ease-out-back),
+              background var(--duration-quick) ease;
+}
+
+.alarm-toggle input:checked + .alarm-toggle-slider {
+  background: var(--accent-subtle);
+}
+
+.alarm-toggle input:checked + .alarm-toggle-slider::before {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+
+.alarm-toggle input:disabled + .alarm-toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.alarm-toggle-label {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Range Slider */
+.alarm-setting-range {
+  gap: var(--space-2);
+}
+
+.alarm-setting-range span {
+  font-size: var(--text-small);
+  color: var(--text-primary);
+}
+
+.alarm-setting-range input[type="range"] {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-pill);
+  appearance: none;
+  cursor: pointer;
+}
+
+.alarm-setting-range input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.alarm-volume-value {
+  min-width: 40px;
+  text-align: right;
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+}
+
+/* Notification Row */
+.alarm-notification-row {
+  flex-wrap: wrap;
+}
+
+.alarm-permission-btn {
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  font-weight: 500;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-tiny);
+  cursor: pointer;
+  transition: background var(--duration-quick) ease;
+}
+
+.alarm-permission-btn:hover {
+  background: var(--accent-subtle);
+}
+
+.alarm-permission-denied {
+  font-size: var(--text-micro);
+  color: var(--danger);
+  font-weight: 500;
+}
+
+/* Setting Hint */
+.alarm-setting-hint {
+  width: 100%;
+  font-size: var(--text-micro);
+  color: var(--text-muted);
+  padding-left: calc(44px + var(--space-3));
+}
+
+/* Test Button */
+.alarm-test-btn {
+  width: 100%;
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--warning);
+  background: transparent;
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: background var(--duration-quick) ease,
+              color var(--duration-quick) ease;
+}
+
+.alarm-test-btn:hover {
+  background: var(--warning);
+  color: #000;
+}

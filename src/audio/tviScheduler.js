@@ -36,11 +36,15 @@ class TVIScheduler {
     this.intervalMs = null;
     this.scheduledAnnouncements = new Map();
     this.announcedMilestones = new Set();
-    this.rafId = null;
+    this.checkInterval = null;
     this.isRunning = false;
+    this.isPaused = false;
+    this.pausedAt = null;
+    this.accumulatedPauseTime = 0;
     this.theme = 'minimal';
     this.lastAnnouncementTime = 0;
     this.minAnnouncementGap = 3000; // Minimum 3s between announcements
+    this.checkFrequencyMs = 250; // Check 4x per second (efficient, not 60fps)
   }
 
   /**
@@ -51,29 +55,42 @@ class TVIScheduler {
    * @param {string} config.theme - Current theme
    */
   start({ totalDuration, intervalMs, theme }) {
+    // Clean up any existing session
+    this.stop();
+
     this.sessionStart = Date.now();
     this.totalDuration = totalDuration;
     this.intervalMs = intervalMs;
     this.theme = theme;
     this.announcedMilestones.clear();
+    this.scheduledAnnouncements.clear();
     this.isRunning = true;
+    this.isPaused = false;
+    this.pausedAt = null;
+    this.accumulatedPauseTime = 0;
     this.lastAnnouncementTime = 0;
 
     // Set personality
     tviEngine.setPersonality(theme);
 
-    // Start the scheduling loop
-    this.scheduleLoop();
+    // For very short timers (< 30s), disable interval announcements
+    if (totalDuration < 30000) {
+      this.intervalMs = null;
+    }
+
+    // Start efficient interval-based loop (not RAF)
+    this.checkInterval = setInterval(() => this.scheduleLoop(), this.checkFrequencyMs);
   }
 
   /**
-   * Main scheduling loop using RAF for precision
+   * Main scheduling loop - runs at fixed interval (efficient)
    */
   scheduleLoop() {
-    if (!this.isRunning) return;
+    if (!this.isRunning || this.isPaused) return;
 
     const now = Date.now();
-    const elapsed = now - this.sessionStart;
+    // Account for accumulated pause time in elapsed calculation
+    const elapsed = now - this.sessionStart - this.accumulatedPauseTime;
     const remaining = this.totalDuration - elapsed;
 
     if (remaining <= 0) {
@@ -87,33 +104,37 @@ class TVIScheduler {
 
     // Check for milestone announcements
     this.checkMilestones(elapsed, remaining);
-
-    // Continue loop
-    this.rafId = requestAnimationFrame(() => this.scheduleLoop());
   }
 
   /**
    * Check and trigger interval-based announcements
-   * @param {number} elapsed - Time elapsed since start
+   * Uses driftless formula: nextTrigger = sessionStart + (n * intervalMs)
+   * @param {number} elapsed - Time elapsed since start (excluding pauses)
    * @param {number} remaining - Time remaining
    */
   checkIntervalAnnouncements(elapsed, remaining) {
-    if (!this.intervalMs) return;
+    if (!this.intervalMs || this.intervalMs <= 0) return;
 
-    // Calculate which interval we should be at
+    // Skip first interval (don't announce immediately after start)
+    if (elapsed < this.intervalMs) return;
+
+    // Calculate current interval count using driftless formula
     const intervalCount = Math.floor(elapsed / this.intervalMs);
-    const nextTrigger = this.sessionStart + (intervalCount * this.intervalMs);
 
-    // Check if we should announce (within 100ms tolerance)
-    const now = Date.now();
-    const diff = now - nextTrigger;
+    // Skip if we've already announced this interval
+    const key = `interval-${intervalCount}`;
+    if (this.scheduledAnnouncements.has(key)) return;
 
-    if (diff >= 0 && diff < 100) {
-      const key = `interval-${intervalCount}`;
-      if (!this.scheduledAnnouncements.has(key) && this.canAnnounce()) {
-        this.scheduledAnnouncements.set(key, true);
-        this.announceTimeRemaining(remaining);
-      }
+    // Calculate expected trigger time for this interval
+    const expectedTriggerElapsed = intervalCount * this.intervalMs;
+
+    // Check if we're within tolerance window of trigger point
+    const tolerance = this.checkFrequencyMs * 2; // 2x check frequency for safety
+    const diff = elapsed - expectedTriggerElapsed;
+
+    if (diff >= 0 && diff < tolerance && this.canAnnounce()) {
+      this.scheduledAnnouncements.set(key, true);
+      this.announceTimeRemaining(remaining);
     }
   }
 
@@ -233,23 +254,27 @@ class TVIScheduler {
    * Pause scheduling
    */
   pause() {
-    this.isRunning = false;
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
+    if (!this.isRunning || this.isPaused) return;
+
+    this.isPaused = true;
+    this.pausedAt = Date.now();
     this.announcePause();
   }
 
   /**
-   * Resume scheduling with adjusted start time
-   * @param {number} remainingTime - Remaining time in ms
+   * Resume scheduling - preserves timing by tracking accumulated pause time
    */
-  resume(remainingTime) {
-    this.sessionStart = Date.now() - (this.totalDuration - remainingTime);
-    this.isRunning = true;
+  resume() {
+    if (!this.isRunning || !this.isPaused) return;
+
+    // Calculate how long we were paused and add to accumulated
+    if (this.pausedAt) {
+      this.accumulatedPauseTime += Date.now() - this.pausedAt;
+    }
+
+    this.isPaused = false;
+    this.pausedAt = null;
     this.announceResume();
-    this.scheduleLoop();
   }
 
   /**
@@ -257,10 +282,13 @@ class TVIScheduler {
    */
   stop() {
     this.isRunning = false;
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
+    this.isPaused = false;
+
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
     }
+
     this.scheduledAnnouncements.clear();
     this.announcedMilestones.clear();
     tviEngine.cancel();

@@ -37,6 +37,12 @@ class TVIEngine {
     this.pitch = 1.0;
     this.enabled = true;
     this.reducedMotion = false;
+    this.voices = [];
+    this.voicesLoaded = false;
+    this.lastSpeakTime = 0;
+    this.minSpeakInterval = 500; // Debounce: min 500ms between speaks
+    this.retryCount = 0;
+    this.maxRetries = 2;
 
     // Check for reduced motion preference
     if (typeof window !== 'undefined') {
@@ -50,24 +56,46 @@ class TVIEngine {
 
   /**
    * Initialize the TVI engine
+   * @returns {Promise<boolean>}
    */
   init() {
-    if (!this.synth) {
-      console.warn('[TVI] Speech synthesis not available');
-      return false;
-    }
+    return new Promise((resolve) => {
+      if (!this.synth) {
+        console.warn('[TVI] Speech synthesis not available');
+        resolve(false);
+        return;
+      }
 
-    // Warm up voices
-    this.synth.getVoices();
-
-    // Handle voice list change
-    if (typeof window !== 'undefined') {
-      window.speechSynthesis.onvoiceschanged = () => {
+      // Load voices (async on most browsers)
+      const loadVoices = () => {
         this.voices = this.synth.getVoices();
+        if (this.voices.length > 0) {
+          this.voicesLoaded = true;
+          resolve(true);
+          return true;
+        }
+        return false;
       };
-    }
 
-    return true;
+      // Try immediate load
+      if (loadVoices()) return;
+
+      // Handle async voice loading
+      if (typeof window !== 'undefined') {
+        window.speechSynthesis.onvoiceschanged = () => {
+          loadVoices();
+        };
+      }
+
+      // Timeout fallback - resolve anyway after 1s
+      setTimeout(() => {
+        if (!this.voicesLoaded) {
+          this.voices = this.synth.getVoices();
+          this.voicesLoaded = this.voices.length > 0;
+          resolve(this.voicesLoaded);
+        }
+      }, 1000);
+    });
   }
 
   /**
@@ -100,6 +128,14 @@ class TVIEngine {
         return;
       }
 
+      // Debounce: skip if too soon after last speak (unless critical)
+      const now = Date.now();
+      if (!options.critical && now - this.lastSpeakTime < this.minSpeakInterval) {
+        resolve();
+        return;
+      }
+      this.lastSpeakTime = now;
+
       // Cancel any current speech
       if (options.interrupt && this.state === TVI_STATE.SPEAKING) {
         this.cancel();
@@ -111,6 +147,14 @@ class TVIEngine {
         return;
       }
 
+      // Chrome bug: synth can get stuck - cancel and resume
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
+      if (this.synth.speaking && !this.synth.pending) {
+        this.synth.cancel();
+      }
+
       this.state = TVI_STATE.SPEAKING;
 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -120,29 +164,54 @@ class TVIEngine {
       utterance.rate = options.rate ?? this.rate;
       utterance.pitch = options.pitch ?? this.pitch;
 
-      // Select voice based on personality
-      const voices = this.synth.getVoices();
+      // Select voice based on personality (use cached voices)
+      const voices = this.voices.length > 0 ? this.voices : this.synth.getVoices();
       const preferredVoice = tviVoices.selectVoice(voices, this.voicePersonality);
       if (preferredVoice) {
         utterance.voice = preferredVoice;
       }
 
+      // Timeout safety net - auto-resolve if speech hangs
+      const safetyTimeout = setTimeout(() => {
+        if (this.state === TVI_STATE.SPEAKING) {
+          console.warn('[TVI] Speech timeout - force resolving');
+          this.synth.cancel();
+          this.state = TVI_STATE.IDLE;
+          this.currentUtterance = null;
+          resolve();
+          this.processQueue();
+        }
+      }, Math.max(10000, text.length * 100)); // ~100ms per character, min 10s
+
       // Event handlers
       utterance.onend = () => {
+        clearTimeout(safetyTimeout);
         this.state = TVI_STATE.IDLE;
         this.currentUtterance = null;
+        this.retryCount = 0;
         resolve();
-
-        // Process queue
         this.processQueue();
       };
 
       utterance.onerror = (event) => {
+        clearTimeout(safetyTimeout);
         this.state = TVI_STATE.IDLE;
         this.currentUtterance = null;
 
         if (event.error !== 'canceled') {
           console.error('[TVI] Speech error:', event.error);
+
+          // Retry logic for recoverable errors
+          if (this.retryCount < this.maxRetries && event.error !== 'not-allowed') {
+            this.retryCount++;
+            console.log(`[TVI] Retrying (${this.retryCount}/${this.maxRetries})...`);
+            setTimeout(() => {
+              this.speak(text, options).then(resolve).catch(reject);
+            }, 200 * this.retryCount);
+            return;
+          }
+
+          this.retryCount = 0;
           reject(event.error);
         } else {
           resolve();

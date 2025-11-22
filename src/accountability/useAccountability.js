@@ -90,6 +90,10 @@ export function useAccountability() {
     allowComedic: false,
   });
   const [pendingAlert, setPendingAlert] = useState(null);
+  const [lastAlertTime, setLastAlertTime] = useState(0);
+
+  // Rate limiting: minimum time between alerts (5 minutes)
+  const MIN_ALERT_INTERVAL_MS = 300000;
 
   // Load from storage
   useEffect(() => {
@@ -118,38 +122,67 @@ export function useAccountability() {
   }, [contacts, settings]);
 
   /**
-   * Add a contact
+   * Add a contact with validation
    */
   const addContact = useCallback(async (contact) => {
     if (contacts.length >= MAX_CONTACTS) {
-      return { success: false, error: 'Maximum contacts reached' };
+      return { success: false, error: `Maximum of ${MAX_CONTACTS} contacts allowed` };
     }
 
     const { name, email, phone, tone = settings.defaultTone, consentGiven = false } = contact;
 
-    if (!name || (!email && !phone)) {
-      return { success: false, error: 'Name and contact method required' };
+    // Validate name
+    const trimmedName = name?.trim();
+    if (!trimmedName || trimmedName.length < 1) {
+      return { success: false, error: 'Name is required' };
+    }
+    if (trimmedName.length > 100) {
+      return { success: false, error: 'Name is too long (max 100 characters)' };
     }
 
+    // Validate contact method
+    const trimmedEmail = email?.trim();
+    const trimmedPhone = phone?.trim();
+
+    if (!trimmedEmail && !trimmedPhone) {
+      return { success: false, error: 'Email or phone number is required' };
+    }
+
+    // Validate email format if provided
+    if (trimmedEmail && !isValidEmail(trimmedEmail)) {
+      return { success: false, error: 'Invalid email format' };
+    }
+
+    // Validate phone format if provided (and no email)
+    if (!trimmedEmail && trimmedPhone && !isValidPhone(trimmedPhone)) {
+      return { success: false, error: 'Invalid phone number format' };
+    }
+
+    // Validate consent
     if (settings.requireConsent && !consentGiven) {
-      return { success: false, error: 'Consent required' };
+      return { success: false, error: 'You must confirm you have permission from this person' };
     }
 
-    // Generate tokenized ID
-    const tokenId = await hashContact(email || phone);
+    // Validate tone
+    const validTones = Object.keys(TONE_TEMPLATES);
+    const effectiveTone = validTones.includes(tone) ? tone : settings.defaultTone;
+
+    // Generate tokenized ID from the primary contact method
+    const contactMethod = trimmedEmail || trimmedPhone;
+    const tokenId = await hashContact(contactMethod);
 
     // Check for duplicates
     if (contacts.some((c) => c.tokenId === tokenId)) {
-      return { success: false, error: 'Contact already exists' };
+      return { success: false, error: 'This contact has already been added' };
     }
 
     const newContact = {
       id: generateToken(),
       tokenId,
-      name,
-      email: email || null,
-      phone: phone || null,
-      tone,
+      name: trimmedName,
+      email: trimmedEmail || null,
+      phone: trimmedPhone || null,
+      tone: effectiveTone,
       consentGiven,
       addedAt: Date.now(),
     };
@@ -175,21 +208,36 @@ export function useAccountability() {
   }, []);
 
   /**
-   * Send alert to contacts
+   * Send alert to contacts with rate limiting
    */
   const sendAlert = useCallback(async (timerInfo) => {
     if (!settings.enabled || contacts.length === 0) {
       return { success: false, error: 'Accountability not enabled or no contacts' };
     }
 
+    // Rate limiting check
+    const now = Date.now();
+    if (now - lastAlertTime < MIN_ALERT_INTERVAL_MS) {
+      const waitTime = Math.ceil((MIN_ALERT_INTERVAL_MS - (now - lastAlertTime)) / 60000);
+      return {
+        success: false,
+        error: `Please wait ${waitTime} minute${waitTime > 1 ? 's' : ''} before sending another alert`,
+        rateLimited: true,
+      };
+    }
+
     const { name: userName = 'User', timerName = 'Timer', setTime, expireTime } = timerInfo;
+
+    // Validate timestamps
+    const validSetTime = Number.isFinite(setTime) ? setTime : Date.now();
+    const validExpireTime = Number.isFinite(expireTime) ? expireTime : Date.now();
 
     const vars = {
       name: userName,
       timerName,
-      setTime: new Date(setTime).toLocaleString(),
-      expireTime: new Date(expireTime).toLocaleString(),
-      timeSince: formatTimeSince(Date.now() - expireTime),
+      setTime: new Date(validSetTime).toLocaleString(),
+      expireTime: new Date(validExpireTime).toLocaleString(),
+      timeSince: formatTimeSince(now - validExpireTime),
     };
 
     const results = [];
@@ -197,10 +245,12 @@ export function useAccountability() {
     for (const contact of contacts) {
       const tone = contact.tone || settings.defaultTone;
 
-      // Skip comedic tone unless allowed and sci-fi theme
+      // Skip comedic tone unless explicitly allowed
       const effectiveTone = tone === 'comedic' && !settings.allowComedic ? 'friendly' : tone;
 
       const template = TONE_TEMPLATES[effectiveTone];
+      if (!template) continue; // Skip if template missing
+
       const subject = formatTemplate(template.subject, vars);
       const body = formatTemplate(template.body, vars);
 
@@ -215,19 +265,22 @@ export function useAccountability() {
       results.push({
         contactId: contact.id,
         status: 'pending',
-        sentAt: Date.now(),
+        sentAt: now,
       });
     }
+
+    // Update rate limiting timestamp
+    setLastAlertTime(now);
 
     setPendingAlert({
       id: generateToken(),
       timerInfo,
-      sentAt: Date.now(),
+      sentAt: now,
       results,
     });
 
-    return { success: true, results };
-  }, [contacts, settings]);
+    return { success: true, results, alertCount: results.length };
+  }, [contacts, settings, lastAlertTime, MIN_ALERT_INTERVAL_MS]);
 
   /**
    * Cancel pending alert (user confirmed they're awake)
@@ -283,15 +336,60 @@ export function useAccountability() {
 
 /**
  * Format time since as human readable
+ * @param {number} ms - Milliseconds since event
+ * @returns {string} Human readable duration
  */
 function formatTimeSince(ms) {
-  const minutes = Math.floor(ms / 60000);
+  // Handle edge cases
+  if (!Number.isFinite(ms) || ms < 0) {
+    return 'just now';
+  }
+
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) {
+    const remainingHours = hours % 24;
+    return `${days} day${days > 1 ? 's' : ''}${remainingHours > 0 ? ` ${remainingHours} hour${remainingHours > 1 ? 's' : ''}` : ''}`;
+  }
 
   if (hours > 0) {
-    return `${hours} hour${hours > 1 ? 's' : ''} ${minutes % 60} minute${minutes % 60 !== 1 ? 's' : ''}`;
+    const remainingMinutes = minutes % 60;
+    return `${hours} hour${hours > 1 ? 's' : ''}${remainingMinutes > 0 ? ` ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}` : ''}`;
   }
-  return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+
+  if (minutes > 0) {
+    return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+  }
+
+  return 'less than a minute';
+}
+
+/**
+ * Validate email format
+ * @param {string} email
+ * @returns {boolean}
+ */
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  // Basic email validation - not exhaustive but catches common errors
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+/**
+ * Validate phone format (basic international format)
+ * @param {string} phone
+ * @returns {boolean}
+ */
+function isValidPhone(phone) {
+  if (!phone || typeof phone !== 'string') return false;
+  // Allow digits, spaces, dashes, parentheses, and + prefix
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+  const phoneRegex = /^\+?\d{7,15}$/;
+  return phoneRegex.test(cleaned);
 }
 
 export { TONE_TEMPLATES, MAX_CONTACTS };

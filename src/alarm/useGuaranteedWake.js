@@ -126,12 +126,15 @@ class AlarmSoundGenerator {
       time += duration;
     });
 
-    // Loop after sequence
+    // Calculate sequence duration in ms (time is audioContext.currentTime, need delta)
+    const sequenceDurationMs = sequence.reduce((acc, { duration }) => acc + duration, 0) * 1000;
+
+    // Loop after sequence with gap
     this.loopTimeout = setTimeout(() => {
       if (this.isPlaying) {
         this.playPattern(pattern, volume);
       }
-    }, time * 1000 + 500);
+    }, sequenceDurationMs + 500);
   }
 
   stop() {
@@ -184,6 +187,19 @@ export function useGuaranteedWake() {
   const escalationTimeoutRef = useRef(null);
   const vibrationIntervalRef = useRef(null);
 
+  // Refs to track state for closures (avoids stale state bug)
+  const isConfirmedRef = useRef(false);
+  const isAlarmingRef = useRef(false);
+
+  // Sync refs with state
+  useEffect(() => {
+    isConfirmedRef.current = isConfirmed;
+  }, [isConfirmed]);
+
+  useEffect(() => {
+    isAlarmingRef.current = isAlarming;
+  }, [isAlarming]);
+
   // Check notification permission
   useEffect(() => {
     if ('Notification' in window) {
@@ -226,8 +242,15 @@ export function useGuaranteedWake() {
   const triggerAlarm = useCallback((options = {}) => {
     if (!settings.enabled) return;
 
+    // Clear any existing alarm first
+    clearTimeout(escalationTimeoutRef.current);
+    clearInterval(vibrationIntervalRef.current);
+    soundRef.current.stop();
+
     setIsAlarming(true);
     setIsConfirmed(false);
+    isAlarmingRef.current = true;
+    isConfirmedRef.current = false;
 
     const { title = "Time's Up!", body = 'Your countdown has completed.' } = options;
 
@@ -236,10 +259,10 @@ export function useGuaranteedWake() {
       soundRef.current.init();
       soundRef.current.play(settings.soundVolume, 'gentle');
 
-      // Escalate if not confirmed
+      // Escalate if not confirmed (use ref to avoid stale closure)
       if (settings.escalationEnabled) {
         escalationTimeoutRef.current = setTimeout(() => {
-          if (!isConfirmed) {
+          if (!isConfirmedRef.current && isAlarmingRef.current) {
             soundRef.current.stop();
             soundRef.current.play(settings.soundVolume, 'urgent');
           }
@@ -253,8 +276,11 @@ export function useGuaranteedWake() {
       navigator.vibrate(vibratePattern);
 
       vibrationIntervalRef.current = setInterval(() => {
-        if (settings.vibrationEnabled && !isConfirmed) {
+        // Use refs for current state in closure
+        if (!isConfirmedRef.current && isAlarmingRef.current) {
           navigator.vibrate(vibratePattern);
+        } else {
+          clearInterval(vibrationIntervalRef.current);
         }
       }, 2000);
     }
@@ -280,12 +306,16 @@ export function useGuaranteedWake() {
         console.error('[Alarm] Notification error:', error);
       }
     }
-  }, [settings, notificationPermission, isConfirmed]);
+  }, [settings, notificationPermission]);
 
   /**
    * Confirm/dismiss the alarm
    */
   const confirmAlarm = useCallback(() => {
+    // Update refs immediately (for closure callbacks)
+    isConfirmedRef.current = true;
+    isAlarmingRef.current = false;
+
     setIsConfirmed(true);
     setIsAlarming(false);
 

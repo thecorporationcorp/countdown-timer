@@ -1,13 +1,17 @@
 {
   "name": "Quantum Countdown Timer",
   "short_name": "Quantum",
-  "description": "Multi-theme countdown timer with PWA support",
+  "description": "Multi-theme countdown timer with voice announcements, guaranteed wake alarm, and accountability features",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#000000",
+  "background_color": "#0a0015",
   "theme_color": "#00ffff",
   "orientation": "portrait-primary",
   "categories": ["productivity", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -30,9 +34,52 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshots/screenshot1.png",
+      "src": "/screenshots/screenshot-wide.png",
       "sizes": "1280x720",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Timer running on desktop"
+    },
+    {
+      "src": "/screenshots/screenshot-narrow.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Timer running on mobile"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick 5 min",
+      "short_name": "5 min",
+      "description": "Start a 5 minute timer",
+      "url": "/?preset=5",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Quick 15 min",
+      "short_name": "15 min",
+      "description": "Start a 15 minute timer",
+      "url": "/?preset=15",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Quick 30 min",
+      "short_name": "30 min",
+      "description": "Start a 30 minute timer",
+      "url": "/?preset=30",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.quantumtimer.app",
+      "id": "com.quantumtimer.app"
+    }
+  ],
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }

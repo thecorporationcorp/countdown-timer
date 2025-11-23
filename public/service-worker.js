@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quantum-countdown-v1';
+const CACHE_NAME = 'quantum-countdown-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -6,6 +6,13 @@ const urlsToCache = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable.png'
+];
+
+// Large files that should use network-first strategy
+const NETWORK_FIRST_PATTERNS = [
+  /\/videos\//,
+  /\.mp4$/,
+  /\.webm$/
 ];
 
 // Install event - cache resources
@@ -40,8 +47,38 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Check if request matches network-first patterns
+function isNetworkFirst(url) {
+  return NETWORK_FIRST_PATTERNS.some(pattern => pattern.test(url));
+}
+
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  const requestUrl = event.request.url;
+
+  // Network-first for large media files (videos)
+  if (isNetworkFirst(requestUrl)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Cache successful responses for offline use
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Cache-first for everything else
   event.respondWith(
     caches.match(event.request)
       .then((response) => {

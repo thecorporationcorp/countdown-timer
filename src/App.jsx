@@ -6,6 +6,7 @@ import { useFeatures } from './FeaturesProvider';
 import TVISettings from './components/TVISettings';
 import AlarmSettings from './components/AlarmSettings';
 import PhoneAFriendUI from './components/PhoneAFriendUI';
+import VideoBackground from './components/VideoBackground';
 import './App.css';
 
 /**
@@ -351,6 +352,8 @@ function App() {
     alarm,
   } = useFeatures();
 
+  const { theme } = useTheme();
+
   const [showPicker, setShowPicker] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -452,6 +455,9 @@ function App() {
 
   return (
     <div className="app">
+      {/* Ambient Video Background */}
+      <VideoBackground theme={theme} />
+
       {/* Settings Button */}
       <button
         className="settings-btn"

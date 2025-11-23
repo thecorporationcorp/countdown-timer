@@ -1,0 +1,126 @@
+/**
+ * VIDEO BACKGROUND STYLES
+ *
+ * Fullscreen ambient video layer that sits behind all content.
+ * Designed for seamless looping with smooth load transitions.
+ */
+
+/* Container - fullscreen fixed positioning */
+.video-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Behind all content */
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--bg-primary);
+}
+
+/* Loading state - hidden until ready */
+.video-background.loading {
+  opacity: 0;
+}
+
+/* Loaded state - fade in smoothly */
+.video-background.loaded {
+  opacity: 1;
+  transition: opacity 1.5s ease-in-out;
+}
+
+/* Video element - cover entire viewport */
+.video-background-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+}
+
+/* Overlay for dimming and color adjustment */
+.video-background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ============================================================================
+   THEME-SPECIFIC OVERLAYS
+   ============================================================================ */
+
+/* Sci-Fi theme: purple/cyan tint, slight darkening */
+[data-theme="sci-fi"] .video-background-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 0, 21, 0.4) 0%,
+    rgba(26, 0, 48, 0.3) 50%,
+    rgba(13, 0, 32, 0.5) 100%
+  );
+  mix-blend-mode: multiply;
+}
+
+/* Calm theme: warm sepia tint, soft vignette */
+[data-theme="calm"] .video-background-overlay {
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      rgba(90, 80, 65, 0.15) 70%,
+      rgba(90, 80, 65, 0.3) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(245, 240, 232, 0.2) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(232, 223, 208, 0.2) 100%
+    );
+}
+
+/* Minimal theme: no video, so no overlay needed */
+[data-theme="minimal"] .video-background {
+  display: none;
+}
+
+/* ============================================================================
+   REDUCED MOTION
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .video-background {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   MOBILE OPTIMIZATION
+   ============================================================================ */
+
+/* On mobile, reduce video quality impact */
+@media (max-width: 768px) {
+  .video-background-video {
+    /* Hint to browser for mobile optimization */
+    will-change: auto;
+  }
+
+  /* Slightly stronger overlay on mobile for better readability */
+  .video-background-overlay {
+    opacity: 1.1;
+  }
+}
+
+/* Low power mode hint */
+@media (prefers-reduced-motion: reduce),
+       (update: slow) {
+  .video-background {
+    display: none;
+  }
+}
